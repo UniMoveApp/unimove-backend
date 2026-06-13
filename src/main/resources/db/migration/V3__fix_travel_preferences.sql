@@ -1,0 +1,1 @@
+ALTER TABLE users ALTER COLUMN travel_preferences TYPE VARCHAR(500);
