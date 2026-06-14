@@ -73,13 +73,11 @@ public class AuthService {
                     .email(email)
                     .fullName(fullName)
                     .role(role)
-                    .passwordHash(passwordEncoder.encode(request.getPassword()))
                     .build();
         } else {
             user = existing.get();
             user.setFullName(fullName);
             user.setEmail(email);
-            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         }
 
         userRepository.save(user);
