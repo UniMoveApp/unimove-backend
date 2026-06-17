@@ -18,10 +18,12 @@ public class RideService {
 
     private final RideRepository rideRepository;
     private final UserRepository userRepository;
+    private final RideMapper rideMapper;
 
-    public RideService(RideRepository rideRepository, UserRepository userRepository) {
+    public RideService(RideRepository rideRepository, UserRepository userRepository, RideMapper rideMapper) {
         this.rideRepository = rideRepository;
         this.userRepository = userRepository;
+        this.rideMapper = rideMapper;
     }
 
     public RideResponse createRide(String username, CreateRideRequest request) {
@@ -49,14 +51,14 @@ public class RideService {
 
         rideRepository.save(ride);
 
-        return toResponse(ride);
+        return rideMapper.toResponse(ride);
     }
 
     @Transactional(readOnly = true)
     public List<RideResponse> searchRide(String driverUsername, String departureCity, String arrivalCity, LocalDate date) {
         return rideRepository.search(driverUsername, departureCity, arrivalCity, date)
                 .stream()
-                .map(this::toResponse)
+                .map(rideMapper::toResponse)
                 .toList();
     }
 
@@ -65,33 +67,5 @@ public class RideService {
             return null;
         }
         return hotspots.get(index);
-    }
-
-    private RideResponse toResponse(Ride ride) {
-        List<String> hotspots = new ArrayList<>();
-        if(ride.getHotspot1() != null)
-            hotspots.add(ride.getHotspot1());
-        if(ride.getHotspot2() != null)
-            hotspots.add(ride.getHotspot2());
-        if(ride.getHotspot3() != null)
-            hotspots.add(ride.getHotspot3());
-
-        return RideResponse.builder()
-                .id(ride.getId())
-                .driverUsername(ride.getDriver().getUsername())
-                .driverFullName(ride.getDriver().getFullName())
-                .departureCity(ride.getDepartureCity())
-                .departureTime(ride.getDepartureTime())
-                .arrivalCity(ride.getArrivalCity())
-                .arrivalTimeEst(ride.getArrivalTimeEst())
-                .hotspots(hotspots)
-                .vehicleModel(ride.getVehicleModel())
-                .vehiclePlate(ride.getVehiclePlate())
-                .totalSeats(ride.getTotalSeats())
-                .availableSeats(ride.getAvailableSeats())
-                .travelPreferences(ride.getTravelPreferences())
-                .status(ride.getStatus())
-                .build();
-
     }
 }

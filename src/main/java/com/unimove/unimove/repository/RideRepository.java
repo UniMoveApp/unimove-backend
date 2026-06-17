@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface RideRepository extends JpaRepository<Ride, java.util.UUID> {
@@ -27,4 +28,13 @@ public interface RideRepository extends JpaRepository<Ride, java.util.UUID> {
     );
 
     String driver(User driver);
+
+    @Query("""
+                SELECT r FROM Ride r
+                WHERE r.driver = :driver
+                AND r.departureTime > :now
+                AND r.status = 'OPEN'
+                ORDER BY r.departureTime ASC
+            """)
+    List<Ride> findUpcomingByDriver(@Param("driver") User driver, @Param("now") LocalDateTime now);
 }

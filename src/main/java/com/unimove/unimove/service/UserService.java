@@ -3,14 +3,18 @@ package com.unimove.unimove.service;
 import com.unimove.unimove.dto.request.RoutePreferenceRequest;
 import com.unimove.unimove.dto.request.UpdateIbanRequest;
 import com.unimove.unimove.dto.request.UpdatePreferenceRequest;
+import com.unimove.unimove.dto.response.RideResponse;
 import com.unimove.unimove.dto.response.RoutePreferenceResponse;
 import com.unimove.unimove.dto.response.UserProfileResponse;
 import com.unimove.unimove.model.RoutePreference;
 import com.unimove.unimove.model.User;
+import com.unimove.unimove.repository.RideRepository;
 import com.unimove.unimove.repository.RoutePreferenceRepository;
 import com.unimove.unimove.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,14 +23,26 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoutePreferenceRepository routePreferenceRepository;
+    private final RideMapper rideMapper;
+    private final RideRepository rideRepository;
 
-    public UserService(UserRepository userRepository, RoutePreferenceRepository routePreferenceRepository) {
+    public UserService(UserRepository userRepository, RoutePreferenceRepository routePreferenceRepository, RideMapper rideMapper, RideRepository rideRepository) {
         this.userRepository = userRepository;
         this.routePreferenceRepository = routePreferenceRepository;
+        this.rideMapper = rideMapper;
+        this.rideRepository = rideRepository;
     }
 
+    @Transactional(readOnly = true)
     public UserProfileResponse getProfile(String username) {
         User user = getUser(username);
+
+        List<RideResponse> upcomingRides = rideRepository
+                .findUpcomingByDriver(user, LocalDateTime.now())
+                .stream()
+                .map(rideMapper::toResponse)
+                .toList();
+
         return UserProfileResponse.builder()
                 .username(user.getUsername())
                 .fullName(user.getFullName())
@@ -36,6 +52,7 @@ public class UserService {
                 .travelPreferences(user.getTravelPreferences())
                 .iban(user.getIban())
                 .ibanHolder(user.getIbanHolder())
+                .upcomingRides(upcomingRides)
                 .build();
     }
 
