@@ -24,11 +24,11 @@ public class AuthService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final RestClient restClient;
 
-    public AuthService(UserRepository userRepository, JwtUtil jwtUtil) {
+    public AuthService(UserRepository userRepository, JwtUtil jwtUtil, RestClient restClient) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = new BCryptPasswordEncoder();
-        this.restClient = RestClient.create();
+        this.restClient = restClient;
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -73,13 +73,11 @@ public class AuthService {
                     .email(email)
                     .fullName(fullName)
                     .role(role)
-                    .passwordHash(passwordEncoder.encode(request.getPassword()))
                     .build();
         } else {
             user = existing.get();
             user.setFullName(fullName);
             user.setEmail(email);
-            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         }
 
         userRepository.save(user);
