@@ -250,4 +250,16 @@ class UserServiceTest {
 
         verify(routePreferenceRepository, never()).delete(route);
     }
+    @Test
+    void deleteRoute_trattaNonTrovata_lanciaEccezione() {
+        UUID routeId = UUID.randomUUID();
+
+        when(userRepository.findByUsername("l.lanese")).thenReturn(Optional.of(testUser));
+        when(routePreferenceRepository.findById(routeId)).thenReturn(Optional.empty());
+
+
+        assertThatThrownBy(() -> userService.deleteRoute("l.lanese", routeId))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Tratta preferita non trovata");
+    }
 }
