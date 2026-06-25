@@ -16,5 +16,6 @@ public class CinecaLoginResponse {
         private String lastName;
         private String userId;
         private String grpDes;
+        private Long persId;
     }
 }

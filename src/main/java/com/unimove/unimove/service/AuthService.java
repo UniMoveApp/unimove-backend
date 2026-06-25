@@ -73,11 +73,15 @@ public class AuthService {
                     .email(email)
                     .fullName(fullName)
                     .role(role)
+                    .persId(userInfo.getPersId())
+                    .avatarUrl(fetchAvatarAsBase64(request.getUsername(), request.getPassword(), userInfo.getPersId()))
                     .build();
         } else {
             user = existing.get();
             user.setFullName(fullName);
             user.setEmail(email);
+            user.setPersId(userInfo.getPersId());
+            user.setAvatarUrl(fetchAvatarAsBase64(request.getUsername(), request.getPassword(), userInfo.getPersId()));
         }
 
         userRepository.save(user);
@@ -122,5 +126,28 @@ public class AuthService {
             case STUDENT -> username + "@studenti.unimol.it";
             case PROFESSOR, STAFF -> username + "@docenti.unimol.it";
         };
+    }
+
+    private String fetchAvatarAsBase64(String username, String password, Long persId) {
+        if (persId == null) return null;
+
+        String credentials = username + ":" + password;
+        String basicAuth = "Basic " + Base64.getEncoder()
+                .encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+
+        try {
+            byte[] imageBytes = restClient.get()
+                    .uri("https://unimol.esse3.cineca.it/e3rest/api/anagrafica-service-v2/persone/" + persId + "/foto")
+                    .header("Authorization", basicAuth)
+                    .header("Accept", "application/octet-stream")
+                    .retrieve()
+                    .body(byte[].class);
+
+            if (imageBytes == null || imageBytes.length == 0) return null;
+
+            return "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(imageBytes);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

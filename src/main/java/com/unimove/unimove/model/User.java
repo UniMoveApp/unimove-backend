@@ -41,6 +41,9 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    @Column(name = "pers_id")
+    private Long persId;
+
     private String iban;
 
     @Column(name = "iban_holder")
