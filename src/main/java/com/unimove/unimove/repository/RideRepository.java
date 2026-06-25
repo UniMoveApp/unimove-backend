@@ -38,6 +38,14 @@ public interface RideRepository extends JpaRepository<Ride, java.util.UUID> {
             """)
     List<Ride> findUpcomingByDriver(@Param("driver") User driver, @Param("now") LocalDateTime now);
 
+    @Query("""
+                SELECT r FROM Ride r
+                WHERE r.driver = :driver
+                AND (:status IS NULL OR r.status = :status)
+                ORDER BY r.departureTime DESC
+            """)
+    List<Ride> findByDriverAndStatus(@Param("driver") User driver, @Param("status") String status);
+
     @Modifying
     @Query("UPDATE Ride r SET r.availableSeats = r.availableSeats - 1 WHERE r.id = :rideId AND r.availableSeats > 0")
     int decrementAvailableSeats(@Param("rideId") UUID rideId);
