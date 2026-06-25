@@ -11,11 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 public class RideService {
+
+    private static final String UTENTE_NON_TROVATO = "Utente non trovato";
 
     private final RideRepository rideRepository;
     private final UserRepository userRepository;
@@ -30,7 +33,7 @@ public class RideService {
     public RideResponse createRide(String username, CreateRideRequest request) {
 
         User driver = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+                .orElseThrow(() -> new RuntimeException(UTENTE_NON_TROVATO));
 
         List<String> hotspots = request.getHotspots();
 
@@ -67,7 +70,7 @@ public class RideService {
     public RideResponse startRide(String username, UUID rideId) {
 
         User driver = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+                .orElseThrow(() -> new RuntimeException(UTENTE_NON_TROVATO));
 
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RuntimeException("Corsa non trovata"));
@@ -90,7 +93,7 @@ public class RideService {
     public void deleteRide(String username, UUID rideId) {
 
         User driver = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+                .orElseThrow(() -> new RuntimeException(UTENTE_NON_TROVATO));
 
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RuntimeException("Corsa non trovata"));
@@ -103,7 +106,7 @@ public class RideService {
             throw new RuntimeException("Corsa non ancora disponibile per cancellazione");
         }
 
-        if (LocalDateTime.now().isAfter(ride.getDepartureTime().minusHours(48))) {
+        if (LocalDateTime.now(ZoneId.of("Europe/Rome")).isAfter(ride.getDepartureTime().minusHours(48))) {
             throw new RuntimeException("Non puoi cancellare una corsa con meno di 48 ore dalla partenza");
         }
 
@@ -114,7 +117,7 @@ public class RideService {
     public List<RideResponse> getMyRides(String username, String status) {
 
         User driver = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+                .orElseThrow(() -> new RuntimeException(UTENTE_NON_TROVATO));
 
         return rideRepository.findByDriverAndStatus(driver, status)
                 .stream()
