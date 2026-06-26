@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Service
 public class RideService {
@@ -90,6 +91,29 @@ public class RideService {
     }
 
     @Transactional
+    public RideResponse completeRide(String username, UUID rideId) {
+
+        User driver = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(UTENTE_NON_TROVATO));
+
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RuntimeException("Corsa non trovata"));
+
+        if (!ride.getDriver().getId().equals(driver.getId())) {
+            throw new RuntimeException("Non sei il guidatore di questa corsa");
+        }
+
+        if (!ride.getStatus().equals("IN_PROGRESS")) {
+            throw new RuntimeException("Corsa non ancora in corso");
+        }
+
+        ride.setStatus("COMPLETED");
+        rideRepository.save(ride);
+
+        return rideMapper.toResponse(ride);
+    }
+
+    @Transactional
     public void deleteRide(String username, UUID rideId) {
 
         User driver = userRepository.findByUsername(username)
@@ -122,6 +146,27 @@ public class RideService {
         return rideRepository.findByDriverAndStatus(driver, status)
                 .stream()
                 .map(rideMapper::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<RideResponse> getArchive(String username) {
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(UTENTE_NON_TROVATO));
+
+        List<RideResponse> asDriver = rideRepository.findCompletedByDriver(user)
+                .stream()
+                .map(rideMapper::toResponse)
+                .toList();
+
+        List<RideResponse> asPassenger = rideRepository.findCompletedByPassenger(user)
+                .stream()
+                .map(rideMapper::toResponse)
+                .toList();
+
+        return Stream.concat(asDriver.stream(), asPassenger.stream())
+                .distinct()
                 .toList();
     }
 

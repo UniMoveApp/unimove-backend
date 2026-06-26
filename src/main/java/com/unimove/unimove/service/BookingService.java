@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -90,5 +91,17 @@ public class BookingService {
         rideRepository.incrementAvailableSeats(ride.getId());
 
         bookingRepository.delete(booking);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getMyBookings(String username) {
+
+        User passenger = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+
+        return bookingRepository.findByPassenger(passenger)
+                .stream()
+                .map(bookingMapper::toResponse)
+                .toList();
     }
 }
