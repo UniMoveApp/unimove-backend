@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -29,5 +30,10 @@ public class BookingController {
     public ResponseEntity<Void> cancelBooking(Principal principal, @PathVariable UUID id) {
         bookingService.cancelBooking(principal.getName(), id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<BookingResponse>> getMyBookings(Principal principal) {
+        return ResponseEntity.ok(bookingService.getMyBookings(principal.getName()));
     }
 }

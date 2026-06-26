@@ -42,6 +42,11 @@ public class RideController {
         return ResponseEntity.ok(rideService.startRide(principal.getName(), id));
     }
 
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<RideResponse> completeRide(Principal principal, @PathVariable UUID id) {
+        return ResponseEntity.ok(rideService.completeRide(principal.getName(), id));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRide(Principal principal, @PathVariable UUID id) {
         rideService.deleteRide(principal.getName(), id);
@@ -51,5 +56,10 @@ public class RideController {
     @GetMapping("/my")
     public ResponseEntity<List<RideResponse>> getMyRides(Principal principal, @RequestParam(required = false) String status) {
         return ResponseEntity.ok(rideService.getMyRides(principal.getName(), status));
+    }
+
+    @GetMapping("/archive")
+    public ResponseEntity<List<RideResponse>> getArchive(Principal principal) {
+        return ResponseEntity.ok(rideService.getArchive(principal.getName()));
     }
 }
