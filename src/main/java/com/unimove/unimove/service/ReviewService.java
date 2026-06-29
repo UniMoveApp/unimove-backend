@@ -55,7 +55,7 @@ public class ReviewService {
         }
 
         if (reviewRepository.existsByRideAndReviewer(ride, reviewer)) {
-            throw new InvalidRequestException("Hai gia recensito questa corsa");
+            throw new InvalidRequestException("Hai già recensito questa corsa");
         }
 
         User reviewed = ride.getDriver();
