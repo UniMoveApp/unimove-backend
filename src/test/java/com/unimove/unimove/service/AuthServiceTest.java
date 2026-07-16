@@ -166,7 +166,7 @@ class AuthServiceTest {
         assertThat(response.getRole()).isEqualTo("PROFESSOR");
         verify(userRepository).save(argThat(user ->
                 user.getRole() == Role.PROFESSOR &&
-                        user.getEmail().equals("l.lanese@docenti.unimol.it")
+                        user.getEmail().equals("l.lanese@unimol.it")
         ));
     }
 

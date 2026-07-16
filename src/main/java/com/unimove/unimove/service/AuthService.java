@@ -127,7 +127,7 @@ public class AuthService {
     private String buildEmail(String username, Role role) {
         return switch (role) {
             case STUDENT -> username + "@studenti.unimol.it";
-            case PROFESSOR, STAFF -> username + "@docenti.unimol.it";
+            case PROFESSOR, STAFF -> username + "@unimol.it";
         };
     }
 

@@ -43,6 +43,9 @@ class BookingServiceTest {
     @Mock
     private BookingMapper bookingMapper;
 
+    @Mock
+    private NotificationService notificationService;
+
     private BookingService bookingService;
 
     private User passenger;
@@ -52,7 +55,7 @@ class BookingServiceTest {
 
     @BeforeEach
     void setUp() {
-        bookingService = new BookingService(bookingRepository, rideRepository, userRepository, bookingMapper);
+        bookingService = new BookingService(bookingRepository, rideRepository, userRepository, bookingMapper, notificationService);
 
         driver = User.builder().id(UUID.randomUUID()).username("l.lanese").role(Role.STUDENT).build();
 
@@ -70,14 +73,12 @@ class BookingServiceTest {
         when(userRepository.findByUsername("test.passeggero")).thenReturn(Optional.of(passenger));
         when(rideRepository.findById(ride.getId())).thenReturn(Optional.of(ride));
         when(bookingRepository.existsByRideAndPassenger(ride, passenger)).thenReturn(false);
-        when(rideRepository.decrementAvailableSeats(ride.getId())).thenReturn(1);
         when(bookingMapper.toResponse(any(Booking.class))).thenReturn(BookingResponse.builder().build());
 
         BookingResponse response = bookingService.createBooking("test.passeggero", request);
 
         assertThat(response).isNotNull();
         verify(bookingRepository).save(argThat(booking -> booking.getPassenger().equals(passenger) && booking.getRide().equals(ride) && booking.getHotspotChosen().equals("Stazione Centrale")));
-        verify(rideRepository).decrementAvailableSeats(ride.getId());
     }
 
     @Test
@@ -119,10 +120,10 @@ class BookingServiceTest {
 
     @Test
     void createBooking_nessunPostoDisponibile_lanciaEccezione() {
+        ride.setAvailableSeats(0);
         when(userRepository.findByUsername("test.passeggero")).thenReturn(Optional.of(passenger));
         when(rideRepository.findById(ride.getId())).thenReturn(Optional.of(ride));
         when(bookingRepository.existsByRideAndPassenger(ride, passenger)).thenReturn(false);
-        when(rideRepository.decrementAvailableSeats(ride.getId())).thenReturn(0);
 
         assertThatThrownBy(() -> bookingService.createBooking("test.passeggero", request))
                 .isInstanceOf(InvalidRequestException.class)
@@ -159,6 +160,7 @@ class BookingServiceTest {
                 .id(bookingId)
                 .ride(ride)
                 .passenger(passenger)
+                .status("CONFIRMED")
                 .build();
 
         when(userRepository.findByUsername("test.passeggero")).thenReturn(Optional.of(passenger));
@@ -198,6 +200,7 @@ class BookingServiceTest {
                 .id(bookingId)
                 .ride(ride)
                 .passenger(passenger)
+                .status("CONFIRMED")
                 .build();
 
         when(userRepository.findByUsername("test.passeggero")).thenReturn(Optional.of(passenger));
@@ -269,4 +272,66 @@ class BookingServiceTest {
         assertThat(result).isEmpty();
     }
 
+    @Test
+    void getBookingsByRide_guidatoreValido_restituiscePrenotazioni() {
+        Booking booking = Booking.builder().id(UUID.randomUUID()).ride(ride).passenger(passenger).status("PENDING").build();
+        when(rideRepository.findById(ride.getId())).thenReturn(Optional.of(ride));
+        when(bookingRepository.findByRide(ride)).thenReturn(List.of(booking));
+        when(bookingMapper.toResponse(booking)).thenReturn(BookingResponse.builder().build());
+
+        List<BookingResponse> result = bookingService.getBookingsByRide("l.lanese", ride.getId());
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void getBookingsByRide_nonGuidatore_lanciaEccezione() {
+        when(rideRepository.findById(ride.getId())).thenReturn(Optional.of(ride));
+
+        assertThatThrownBy(() -> bookingService.getBookingsByRide("altro.utente", ride.getId()))
+                .isInstanceOf(com.unimove.unimove.exception.UnauthorizedException.class)
+                .hasMessage("Non sei il guidatore di questa corsa");
+    }
+
+    @Test
+    void acceptBooking_prenotazioneValida_accettaConSuccesso() {
+        UUID bookingId = UUID.randomUUID();
+        Booking booking = Booking.builder().id(bookingId).ride(ride).passenger(passenger).status("PENDING").build();
+        when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
+        when(rideRepository.decrementAvailableSeats(ride.getId())).thenReturn(1);
+        when(bookingMapper.toResponse(booking)).thenReturn(BookingResponse.builder().id(bookingId).status("CONFIRMED").build());
+
+        BookingResponse response = bookingService.acceptBooking("l.lanese", bookingId);
+
+        assertThat(response.getStatus()).isEqualTo("CONFIRMED");
+        assertThat(booking.getStatus()).isEqualTo("CONFIRMED");
+        verify(rideRepository).decrementAvailableSeats(ride.getId());
+        verify(bookingRepository).save(booking);
+    }
+
+    @Test
+    void acceptBooking_nonPendente_lanciaEccezione() {
+        UUID bookingId = UUID.randomUUID();
+        Booking booking = Booking.builder().id(bookingId).ride(ride).passenger(passenger).status("CONFIRMED").build();
+        when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
+
+        assertThatThrownBy(() -> bookingService.acceptBooking("l.lanese", bookingId))
+                .isInstanceOf(InvalidRequestException.class)
+                .hasMessage("Puoi accettare solo prenotazioni in attesa (PENDING)");
+    }
+
+    @Test
+    void rejectBooking_prenotazioneValida_rifiutaConSuccesso() {
+        UUID bookingId = UUID.randomUUID();
+        Booking booking = Booking.builder().id(bookingId).ride(ride).passenger(passenger).status("PENDING").build();
+        when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
+        when(bookingMapper.toResponse(booking)).thenReturn(BookingResponse.builder().id(bookingId).status("REJECTED").build());
+
+        BookingResponse response = bookingService.rejectBooking("l.lanese", bookingId);
+
+        assertThat(response.getStatus()).isEqualTo("REJECTED");
+        assertThat(booking.getStatus()).isEqualTo("REJECTED");
+        verify(bookingRepository).save(booking);
+        verify(rideRepository, never()).decrementAvailableSeats(any());
+    }
 }

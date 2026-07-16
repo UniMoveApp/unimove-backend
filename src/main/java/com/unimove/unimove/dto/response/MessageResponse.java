@@ -15,23 +15,19 @@ import java.util.UUID;
 @AllArgsConstructor
 @JsonPropertyOrder({
         "id",
-        "rideId",
-        "passengerUsername",
-        "passengerFullName",
-        "hotspotChosen",
-        "status",
-        "createdAt",
-        "ride"
+        "senderUsername",
+        "senderFullName",
+        "content",
+        "latitude",
+        "longitude",
+        "createdAt"
 })
-
-public class BookingResponse {
-
+public class MessageResponse {
     private UUID id;
-    private UUID rideId;
-    private String passengerUsername;
-    private String passengerFullName;
-    private String hotspotChosen;
-    private String status;
+    private String senderUsername;
+    private String senderFullName;
+    private String content;
+    private Double latitude;
+    private Double longitude;
     private LocalDateTime createdAt;
-    private RideResponse ride;
 }

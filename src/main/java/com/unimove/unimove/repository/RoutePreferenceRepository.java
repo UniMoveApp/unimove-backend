@@ -10,4 +10,5 @@ import java.util.UUID;
 public interface RoutePreferenceRepository extends JpaRepository<RoutePreference, UUID> {
     List<RoutePreference> findByUser(User user);
     int countByUser(User user);
+    List<RoutePreference> findByCityFromIgnoreCaseAndCityToIgnoreCase(String cityFrom, String cityTo);
 }

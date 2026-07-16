@@ -13,7 +13,11 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
 
     boolean existsByRideAndPassenger(Ride ride, User passenger);
 
+    boolean existsByRideAndPassengerAndStatus(Ride ride, User passenger, String status);
+
     List<Booking> findByPassenger(User passenger);
 
     Optional<Booking> findByIdAndPassenger(UUID id, User passenger);
+
+    List<Booking> findByRide(Ride ride);
 }
