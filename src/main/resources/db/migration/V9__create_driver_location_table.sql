@@ -1,0 +1,6 @@
+CREATE TABLE driver_locations (
+    ride_id UUID PRIMARY KEY REFERENCES rides(id) ON DELETE CASCADE,
+    latitude DOUBLE PRECISION NOT NULL,
+    longitude DOUBLE PRECISION NOT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);

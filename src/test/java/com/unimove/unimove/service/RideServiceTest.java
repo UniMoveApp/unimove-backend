@@ -10,6 +10,9 @@ import com.unimove.unimove.model.Role;
 import com.unimove.unimove.model.User;
 import com.unimove.unimove.repository.RideRepository;
 import com.unimove.unimove.repository.UserRepository;
+import com.unimove.unimove.repository.MessageRepository;
+import com.unimove.unimove.repository.BookingRepository;
+import com.unimove.unimove.repository.RoutePreferenceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,13 +42,33 @@ class RideServiceTest {
     @Mock
     private RideMapper rideMapper;
 
+    @Mock
+    private MessageRepository messageRepository;
+
+    @Mock
+    private BookingRepository bookingRepository;
+
+    @Mock
+    private RoutePreferenceRepository routePreferenceRepository;
+
+    @Mock
+    private NotificationService notificationService;
+
     private RideService rideService;
 
     private User driver;
 
     @BeforeEach
     void setUp() {
-        rideService = new RideService(rideRepository, userRepository, rideMapper);
+        rideService = new RideService(
+                rideRepository,
+                userRepository,
+                rideMapper,
+                messageRepository,
+                bookingRepository,
+                routePreferenceRepository,
+                notificationService
+        );
 
         driver = User.builder()
                 .id(UUID.randomUUID())

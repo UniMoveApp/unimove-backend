@@ -1,6 +1,7 @@
 package com.unimove.unimove.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,23 +16,22 @@ import java.util.UUID;
 @AllArgsConstructor
 @JsonPropertyOrder({
         "id",
+        "userId",
+        "type",
+        "message",
+        "isRead",
         "rideId",
-        "passengerUsername",
-        "passengerFullName",
-        "hotspotChosen",
-        "status",
-        "createdAt",
-        "ride"
+        "createdAt"
 })
-
-public class BookingResponse {
-
+public class NotificationResponse {
     private UUID id;
+    private UUID userId;
+    private String type;
+    private String message;
+
+    @JsonProperty("isRead")
+    private boolean isRead;
+
     private UUID rideId;
-    private String passengerUsername;
-    private String passengerFullName;
-    private String hotspotChosen;
-    private String status;
     private LocalDateTime createdAt;
-    private RideResponse ride;
 }

@@ -18,7 +18,7 @@ public interface RideRepository extends JpaRepository<Ride, java.util.UUID> {
                 WHERE (:driverUsername IS NULL OR r.driver.username = :driverUsername)
                 AND (:departureCity IS NULL OR r.departureCity = :departureCity)
                 AND (:arrivalCity IS NULL OR r.arrivalCity = :arrivalCity)
-                AND (CAST(:date AS date) IS NULL OR CAST(r.departureTime AS date) = CAST(:date AS date))
+                AND (cast(:date as date) IS NULL OR CAST(r.departureTime AS date) = :date)
                 AND r.availableSeats > 0
                 AND r.status = 'OPEN'
             """)

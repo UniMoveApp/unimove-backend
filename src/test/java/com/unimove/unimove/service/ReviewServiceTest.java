@@ -46,6 +46,9 @@ class ReviewServiceTest {
     @Mock
     private ReviewMapper reviewMapper;
 
+    @Mock
+    private NotificationService notificationService;
+
     private ReviewService reviewService;
 
     private User reviewer;
@@ -55,7 +58,7 @@ class ReviewServiceTest {
 
     @BeforeEach
     void setUp() {
-        reviewService = new ReviewService(reviewRepository, rideRepository, userRepository, bookingRepository, reviewMapper);
+        reviewService = new ReviewService(reviewRepository, rideRepository, userRepository, bookingRepository, reviewMapper, notificationService);
 
         driver = User.builder()
                 .id(UUID.randomUUID())

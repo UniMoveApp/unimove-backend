@@ -36,4 +36,19 @@ public class BookingController {
     public ResponseEntity<List<BookingResponse>> getMyBookings(Principal principal) {
         return ResponseEntity.ok(bookingService.getMyBookings(principal.getName()));
     }
+
+    @GetMapping("/ride/{rideId}")
+    public ResponseEntity<List<BookingResponse>> getBookingsByRide(Principal principal, @PathVariable UUID rideId) {
+        return ResponseEntity.ok(bookingService.getBookingsByRide(principal.getName(), rideId));
+    }
+
+    @PatchMapping("/{id}/accept")
+    public ResponseEntity<BookingResponse> acceptBooking(Principal principal, @PathVariable UUID id) {
+        return ResponseEntity.ok(bookingService.acceptBooking(principal.getName(), id));
+    }
+
+    @PatchMapping("/{id}/reject")
+    public ResponseEntity<BookingResponse> rejectBooking(Principal principal, @PathVariable UUID id) {
+        return ResponseEntity.ok(bookingService.rejectBooking(principal.getName(), id));
+    }
 }

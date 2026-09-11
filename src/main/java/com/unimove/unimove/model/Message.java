@@ -10,12 +10,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "bookings")
+@Table(name = "messages")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Booking {
+public class Message {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -26,14 +26,17 @@ public class Booking {
     private Ride ride;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "passenger_id", nullable = false)
-    private User passenger;
+    @JoinColumn(name = "sender_id", nullable = false)
+    private User sender;
 
-    @Column(name = "hotspot_chosen")
-    private String hotspotChosen;
+    @Column(name = "content", nullable = false, length = 1000)
+    private String content;
 
-    @Column(name = "status", nullable = false)
-    private String status;
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -41,8 +44,5 @@ public class Booking {
     @PrePersist
     private void onCreate() {
         this.createdAt = LocalDateTime.now();
-        if (this.status == null) {
-            this.status = "PENDING";
-        }
     }
 }

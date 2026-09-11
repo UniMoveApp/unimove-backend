@@ -28,13 +28,15 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final ReviewMapper reviewMapper;
+    private final NotificationService notificationService;
 
-    public ReviewService(ReviewRepository reviewRepository, RideRepository rideRepository, UserRepository userRepository, BookingRepository bookingRepository, ReviewMapper reviewMapper) {
+    public ReviewService(ReviewRepository reviewRepository, RideRepository rideRepository, UserRepository userRepository, BookingRepository bookingRepository, ReviewMapper reviewMapper, NotificationService notificationService) {
         this.reviewRepository = reviewRepository;
         this.rideRepository = rideRepository;
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
         this.reviewMapper = reviewMapper;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -69,6 +71,14 @@ public class ReviewService {
                 .build();
 
         reviewRepository.save(review);
+
+        // Notify the reviewed user (RF-8.3)
+        String msg = String.format("Hai ricevuto una nuova recensione da %s per la corsa da %s a %s (%d stelle).",
+                reviewer.getFullName(),
+                ride.getDepartureCity(),
+                ride.getArrivalCity(),
+                review.getRating());
+        notificationService.sendNotification(reviewed, "NEW_REVIEW", msg, ride);
 
         return reviewMapper.toResponse(review);
     }

@@ -7,6 +7,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class BookingMapper {
 
+    private final RideMapper rideMapper;
+
+    public BookingMapper(RideMapper rideMapper) {
+        this.rideMapper = rideMapper;
+    }
+
     public BookingResponse toResponse(Booking booking) {
         return BookingResponse.builder()
                 .id(booking.getId())
@@ -16,6 +22,7 @@ public class BookingMapper {
                 .hotspotChosen(booking.getHotspotChosen())
                 .status(booking.getStatus())
                 .createdAt(booking.getCreatedAt())
+                .ride(rideMapper.toResponse(booking.getRide()))
                 .build();
     }
 }
